@@ -56,9 +56,10 @@ export default {
         if (valid === true) {
           const {data: dt} = await this.$http.post('/login', {
             username: this.loginForm.username,
-            userpwd: this.loginForm.userpwd
+            password: this.loginForm.userpwd
           })
-          if (dt.data.status !== 200) {
+          console.log(dt)
+          if (dt.meta.status !== 200) {
             return this.$message.error(dt.meta.msg)
           }
           window.sessionStorage.setItem('token', dt.data.token)
