@@ -12,7 +12,7 @@
           </el-input>
         </el-form-item>
         <el-form-item prop="userpwd">
-          <el-input v-model="loginForm.userpwd">
+          <el-input v-model="loginForm.userpwd" :show-password="true">
             <i slot="prefix" class="iconfont icon-3702mima"></i>
           </el-input>
         </el-form-item>
