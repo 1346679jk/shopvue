@@ -6,12 +6,46 @@
       <el-breadcrumb-item>用户列表</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <!-- 用户对话框 -->
-    <el-dialog title="添加用户" :visible.sync="addUserDialog" width="50%">
-      <span>这是一段信息</span>
+    <!-- 修改数据 -->
+    <el-dialog title="修改用户" :visible.sync="editUserDialog" width="50%" @close="resetEditForm()">
+      <el-form ref="editUserRef" :model="editUser" :rules="editUserRules" label-width="80px">
+        <el-form-item prop="username" label="用户名">
+          <el-input v-model="editUser.username"></el-input>
+        </el-form-item>
+        <el-form-item prop="mobile" label="手机号码">
+          <el-input v-model="editUser.mobile"></el-input>
+        </el-form-item>
+        <el-form-item prop="email" label="邮箱">
+          <el-input v-model="editUser.email"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editUserDialog = false">取 消</el-button>
+        <el-button type="primary" @click="xiugai()">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 添加用户对话框 -->
+    <el-dialog title="添加用户" :visible.sync="addUserDialog" width="50%" @close="resetForm()">
+      <el-form ref="addUserRef" :model="addUser" :rules="addUserRules" label-width="80px">
+        <el-form-item prop="username" label="用户名">
+          <el-input v-model="addUser.username"></el-input>
+        </el-form-item>
+        <el-form-item prop="password" label="密码">
+          <el-input v-model="addUser.password" show-password></el-input>
+        </el-form-item>
+        <el-form-item prop="mobile" label="手机号码">
+          <el-input v-model="addUser.mobile"></el-input>
+        </el-form-item>
+        <el-form-item prop="email" label="邮箱">
+          <el-input v-model="addUser.email"></el-input>
+        </el-form-item>
+      </el-form>
+
       <span slot="footer" class="dialog-footer">
         <el-button @click="addUserDialog = false">取 消</el-button>
-        <el-button type="primary" @click="addUserDialog = false">确 定</el-button>
+        <el-button type="primary" @click="tianjia()">确 定</el-button>
       </span>
     </el-dialog>
 
@@ -46,11 +80,18 @@
           <el-switch v-model="info.row.mg_state" slot-scope="info"></el-switch>
         </el-table-column>
         <el-table-column label="操作" width="300">
-          <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
-          <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
-          <el-tooltip class="item" effect="dark" content="分配角色" placement="top">
-            <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
-          </el-tooltip>
+          <template slot-scope="info">
+            <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(info.row.id)"></el-button>
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              size="mini"
+              @click="delUser(info.row.id)"
+            ></el-button>
+            <el-tooltip class="item" effect="dark" content="分配角色" placement="top">
+              <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+            </el-tooltip>
+          </template>
         </el-table-column>
       </el-table>
 
@@ -70,23 +111,107 @@
 
 <script>
 export default {
-  created () {
+  created() {
     this.getUserList()
   },
-  data () {
+  data() {
+    var checkMobile = (rule, value, callback) => {
+      var reg = /^1[3456789]\d{9}$/
+      if (!reg.test(value)) {
+        return callback(new Error('手机号码格式不正确'))
+      }
+      callback()
+    }
     return {
       addUserDialog: false,
+      editUserDialog: false,
       userList: [],
       tot: 0,
       querycdt: {
         query: '',
         pagenum: 1,
         pagesize: 3
+      },
+      editUser: {
+        username: '',
+        password: '',
+        mobile: '',
+        email: ''
+      },
+      addUserRules: {
+        username: [{ required: true, message: '用户名必填', trigger: 'blur' }],
+        password: [{ required: true, message: '密码必填', trigger: 'blur' }],
+        mobile: [
+          { required: true, message: '手机号码必填', trigger: 'blur' },
+          { validator: checkMobile, trigger: 'blur' }
+        ]
+      },
+      editUserRules: {
+        mobile: [
+          {required: true, message: '手机号码必填', trigger: 'blur'},
+          {validator: checkMobile, trigger: 'blur'}
+        ]
+      },
+      addUser: {
+        username: '',
+        password: '',
+        mobile: '',
+        email: ''
+      },
+      editUser: {
+        username: '',
+        mobile: '',
+        email: ''
       }
     }
   },
   methods: {
-    async getUserList () {
+    async showEditDialog(id) {
+      this.editUserDialog = true
+      const {data: dt} = await this.$http.get('/users/' + id)
+      if (dt.meta.status !== 200) {
+        return this.$message.error(dt.meta.msg)
+      }
+      this.editUser = dt.data
+    },
+    delUser(id) {
+      this.$confirm('确认要删除该用户么', '删除', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        const { data: dt } = await this.$http.delete('/users/' + id)
+        if (dt.meta.status !== 200) {
+          return this.$message.error(dt.meta.msg)
+        }
+        this.$message.success(dt.meta.msg)
+
+        if (this.userList.length === 1 && this.querycdt.pagenum > 1) {
+          this.querycdt.pagenum--
+        }
+        this.getUserList()
+      })
+    },
+    resetForm() {
+      this.$refs.addUserRef.resetFileds()
+    },
+    resetEditForm() {
+      this.$refs.editUserRef.resetFileds()
+    },
+    tianjia() {
+      this.$refs.addUserRef.validate(async valid => {
+        if (valid) {
+          const { data: dt } = await this.$http.post('/users', this.addUser)
+          if (dt.meta.status !== 201) {
+            return this.$message.error(dt.meta.msg)
+          }
+          this.addUserDialog = false
+          this.$message.success(dt.meta.msg)
+          this.getUserList()
+        }
+      })
+    },
+    async getUserList() {
       const { data: dt } = await this.$http.get('/users', {
         params: this.querycdt
       })
@@ -96,14 +221,14 @@ export default {
       this.tot = dt.data.total
       this.userList = dt.data.users
     },
-    search () {
+    search() {
       this.getUserList()
     },
-    handleCurrentChange (val) {
+    handleCurrentChange(val) {
       this.querycdt.pagenum = val
       this.getUserList()
     },
-    handleSizeChange (val) {
+    handleSizeChange(val) {
       this.querycdt.pagesize = val
       this.getUserList()
     }

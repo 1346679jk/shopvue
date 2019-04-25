@@ -30,8 +30,8 @@
               <span>{{ item.authName }}</span>
             </template>
             <el-menu-item :index="item2.path" v-for="item2 in item.children" :key="item2.id">
-                <i class="el-icon-menu"></i>
-                <span>{{ item2.authName }}</span>
+              <i class="el-icon-menu"></i>
+              <span>{{ item2.authName }}</span>
             </el-menu-item>
           </el-submenu>
         </el-menu>
@@ -45,10 +45,10 @@
 
 <script>
 export default {
-  created () {
+  created() {
     this.getMenuList()
   },
-  data () {
+  data() {
     return {
       isshow: false,
       menuList: [],
@@ -56,7 +56,7 @@ export default {
     }
   },
   methods: {
-    logout () {
+    logout() {
       this.$confirm('确认要退出系统么?', '退出', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -68,8 +68,8 @@ export default {
         })
         .catch(() => {})
     },
-    async getMenuList () {
-      const {data: dt} = await this.$http.get('/menus')
+    async getMenuList() {
+      const { data: dt } = await this.$http.get('/menus')
       if (dt.meta.status !== 200) {
         return this.$message.error(dt.meta.msg)
       }
@@ -105,16 +105,16 @@ export default {
   .el-aside {
     background-color: #333744;
     .toggle_bar {
-        width: 200px;
-        height: 25px;
-        background-color: #4a5064;
-        color: #fff;
-        text-align: center;
-        font-size: 12px;
-        line-height: 25px;
-        letter-spacing: 0.1em;
-        user-select: none;
-        cursor: pointer;
+      width: 200px;
+      height: 25px;
+      background-color: #4a5064;
+      color: #fff;
+      text-align: center;
+      font-size: 12px;
+      line-height: 25px;
+      letter-spacing: 0.1em;
+      user-select: none;
+      cursor: pointer;
     }
   }
   .el-main {

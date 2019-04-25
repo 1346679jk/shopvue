@@ -29,32 +29,32 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       loginForm: {
         username: '',
         userpwd: ''
       },
       loginFormRules: {
-        username: [
-          {required: true, message: '用户名必填', trigger: 'blur'}
-        ],
+        username: [{ required: true, message: '用户名必填', trigger: 'blur' }],
         userpwd: [
           {
-            required: true, message: '密码必填', trigger: 'blur'
+            required: true,
+            message: '密码必填',
+            trigger: 'blur'
           }
         ]
       }
     }
   },
   methods: {
-    reset () {
+    reset() {
       this.$refs.loginFormRef.resetFields()
     },
-    login () {
+    login() {
       this.$refs.loginFormRef.validate(async valid => {
         if (valid === true) {
-          const {data: dt} = await this.$http.post('/login', {
+          const { data: dt } = await this.$http.post('/login', {
             username: this.loginForm.username,
             password: this.loginForm.userpwd
           })
